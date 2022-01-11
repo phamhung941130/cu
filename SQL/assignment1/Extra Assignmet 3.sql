@@ -36,6 +36,27 @@ DELETE FROM Trainee WHERE ET_IQ + ET_Gmath <= 15;
 -- Question 17: Xóa thực tập sinh quá 30 tuổi.
 DELETE FROM trainee
 WHERE Birth_Date < '1991-01-01';
--- Thực tập sinh có TraineeID = 3 được chuyển sang lớp " VTI003". Hãy cập nhật thông tin vào database.
+-- Question 18: Thực tập sinh có TraineeID = 3 được chuyển sang lớp " VTI003". Hãy cập nhật thông tin vào database.
 UPDATE trainee t SET Training_Class = 'VTI003' WHERE TraineeID =3;
+SELECT * FROM Trainee;
+-- Question 19: Do sự nhầm lẫn khi nhập liệu nên thông tin của học sinh số 10 đang bị sai, hãy cập nhật lại tên thành "LeVanA", điểm ET_IQ = 10, điểm ET_Gmath =15, điểm ET_English = 30.
+UPDATE Trainee t SET FUll_Name = 'LeVanA',ET_IQ = 10,ET_Gmath = 15,ET_English = 30
+WHERE TraineeID = 10;
 
+-- Question 20 : Điểm xem trong lớp VTI001 có bao nhiêu thực tập sinh.
+SELECT COUNT(*) FROM Trainee WHERE Training_Class = 'VTI001';
+
+-- Question 22: Đếm tổng số thực tập sinh trong lớp VTI001 và VTI003 có bao nhiêu thực tập sinh.
+SELECT Training_Class,COUNT(*) FROM Trainee GROUP BY Training_Class HAVING Training_Class ='VTI001' OR Training_Class ='VTI003';
+-- Question 23: Lấy ra số lượng các thực tập sinh theo giới tính: Male, Female, Unknown.
+SELECT Gender,COUNT(Gender) FROM Trainee GROUP BY Gender;
+-- Question 24: Lấy ra lớp có lớn hơn 5 thực tập viên
+SELECT Training_Class,COUNT(*) FROM Trainee GROUP BY Training_Class HAVING COUNT(*) >5;
+-- Question 26: Lấy ra trường có ít hơn 4 thực tập viên tham gia khóa học
+SELECT Training_Class,COUNT(*) FROM Trainee GROUP BY Training_Class HAVING COUNT(*) <4;
+-- Question 27: Bước 1: Lấy ra danh sách thông tin ID, Fullname, lớp thực tập viên có lớp 'VTI001'
+-- 				Bước 2: Lấy ra danh sách thông tin ID, Fullname, lớp thực tập viên có lớp 'VTI002'
+-- 				Bước 3: Sử dụng UNION để nối 2 kết quả ở bước 1 và 2
+SELECT TraineeID,FUll_Name,Training_Class FROM Trainee WHERE Training_Class ='VTI001'
+UNION
+SELECT TraineeID,FUll_Name,Training_Class FROM Trainee WHERE Training_Class ='VTI003';

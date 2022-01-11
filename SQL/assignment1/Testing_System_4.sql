@@ -35,29 +35,26 @@ HAVING Count(1) = (SELECT Max(Số_Lần_SD) FROM (SELECT COUNT(1) Số_lần_SD
 -- Question 6: Thống kê mỗi category Question được sử dụng trong bao nhiêu Question
 SELECT * FROM Question;
 SELECT * FROM CategoryQuestion;
-SELECT c.CategoryName, COUNT(1) Số_Lần_SD FROM Question q
-INNER JOIN CategoryQuestion c ON c.CategoryID = q.CategoryID
-GROUP BY q.CategoryID;
+SELECT COUNT(q.categoryID) Số_Lần_SD FROM Question q
+RIGHT JOIN CategoryQuestion c ON c.CategoryID = q.CategoryID
+GROUP BY c.CategoryID;
 
 -- Question 7: Thống kê mỗi Question đc sử dụng trong trong bao nhiêu Exam
-SELECT q.Content, COUNT(1) SL FROM examquestion eq
-INNER JOIN Question q ON q.QuestionID = eq.QuestionID
-GROUP BY eq.QuestionID;
+SELECT q.Content, COUNT(eq.QuestionID) SL FROM examquestion eq
+RIGHT JOIN Question q ON q.QuestionID = eq.QuestionID
+GROUP BY q.QuestionID;
 
 -- Question 8: Lấy ra Question có nhiều câu trả lời nhất
-SELECT * FROM answer;
-SELECT * FROM Question;
-SELECT COUNT(1) SL FROM Answer a GROUP BY a.QuestionID;
-SELECT MAX(SL) FROM (SELECT COUNT(1) SL FROM Answer a GROUP BY a.QuestionID) as temp;
-SELECT q.Content, COUNT(1) FROM Answer a 
+WITH cte_SL as(SELECT COUNT(*) SL FROM answer a GROUP BY QuestionID)
+SELECT COUNT(*) Số_câu,q.Content FROM answer a
 INNER JOIN Question q ON q.QuestionID = a.QuestionID
 GROUP BY a.QuestionID
-HAVING COUNT(1) = (SELECT MAX(SL) FROM (SELECT COUNT(1) SL FROM Answer a GROUP BY a.QuestionID) as temp);
+HAVING Số_câu = (SELECT MAX(SL) FROM cte_SL);
 
 -- Question 9: Thống kê số lượng account trong mỗi group
-SELECT g.GroupName, COUNT(1) SL FROM GroupAccount ga
-INNER JOIN `Group` g ON g.GroupID = ga.GroupID
-GROUP BY ga.GroupID;
+SELECT g.GroupName, COUNT(ga.GroupID) SL FROM GroupAccount ga
+RIGHT JOIN `Group` g ON g.GroupID = ga.GroupID
+GROUP BY g.GroupID;
 
 -- Question 10: Tìm chức vụ có ít người nhất
 SELECT COUNT(*) SL FROM `account` a GROUP BY a.positionID;
@@ -71,12 +68,13 @@ SELECT p.positionName,a.positionID FROM `account` a
 INNER JOIN position p ON p.positionID = a.positionID;
 
 -- Question 11:	Thống kê mỗi phòng ban có bao nhiêu dev,test,scrum master,PM
-SELECT d.DepartmentID,d.DepartmentName,p.PositionName,COUNT(p.PositionID) FROM `account` a
+SELECT d.DepartmentID,d.DepartmentName,p.PositionName,COUNT(a.PositionID) FROM `account` a
 INNER JOIN Department d ON d.DepartmentID = a.DepartmentID
 INNER JOIN Position p ON p.PositionID = a.PositionID
 GROUP BY d.DepartmentID,p.PositionID;
 SELECT * FROM `account`;
 SELECT * FROM Position;
+
 -- Question 12: Lấy thông tin chi tiết của câu hỏi bao gồm: thông tin cơ bản của question, loại câu hỏi, ai là người tạo ra câu hỏi, câu trả lời là gì:
 SELECT * FROM Answer;
 SELECT q.QuestionID,q.Content,t.TypeName,a.FUllNAME,s.content FROM Question q
@@ -87,17 +85,30 @@ INNER JOIN Answer s ON s.QuestionID = q.QuestionID;
 SELECT * FROM Question;
 
 -- Question 13: Lấy ra số lượng câu hỏi của mỗi loại tự luận hay trắc nghiệm
-SELECT t.TypeName,COUNT(1) FROM Question q
+SELECT t.TypeName,COUNT(q.TypeID) FROM Question q
 INNER JOIN TypeQuestion t ON t.TypeID = q.TypeID
 GROUP BY q.TypeID;
 
 -- Question 14: Lấy ra group không có account nào
-SELECT * FROM GroupAccount;
-SELECT * FROM `Group`;
-SELECT DISTINCT GroupID FROM GroupAccount;
-SELECT g.GroupName,g.GroupID FROM GroupAccount ga
-INNER JOIN `Group` g ON g.GroupID = ga.GroupID
-GROUP BY g.GroupID
-HAVING g.GroupID NOT IN (SELECT DISTINCT GroupID FROM GroupAccount); -- chưa chạy được
+SELECT * FROM `Group` g
+LEFT JOIN GroupAccount ga ON ga.GroupID = g.GroupID
+WHERE ga.groupID is null;
+SELECT * FROM GroupAccount ga
+RIGHT JOIN `Group` g ON g.GroupID = ga.GroupID
+WHERE ga.GroupID IS NULL;
 
 -- Question 15: Lấy ra question không có answer nào
+SELECT * FROM answer a
+RIGHT JOIN Question q ON q.QuestionID = a.QuestionID
+WHERE a.QuestionID IS NULL;
+
+-- -- Exercise 2: Union
+-- Question 17: a) Lấy các account thuộc nhóm thứ 1
+-- 				b) Lấy các account thuộc nhóm thứ 2
+-- 				c) Ghép 2 kết quả từ câu a) và câu b) sao cho không có record nào trùng nhau
+SELECT * FROM Groupaccount;
+SELECT * FROM Groupaccount ga INNER JOIN `account` a ON a.accountID = ga.accountID
+WHERE GroupID = 1
+UNION
+SELECT * FROM Groupaccount ga INNER JOIN `account` a ON a.accountID = ga.accountID
+ WHERE GroupID = 3;
